@@ -2,9 +2,11 @@
 <html>
 <head>
     <title>Spotify Recently Played</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
 </head>
 <body>
-    <h1>Welcome to Spotify Recently Played Tracks App</h1>
+    <h1>Bienvenue sur l'application de stats Spotify</h1>
     <a href="{{ url_for('login') }}">Login with Spotify</a>
 </body>
 </html>

@@ -1,124 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Spotify Statistics</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #1DB954;
-            margin-bottom: 40px;
-        }
-        .track {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            background-color: #181818;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .track img {
-            margin-right: 20px;
-            border-radius: 8px;
-        }
-        .track-details {
-            max-width: 600px;
-        }
-        .stat-section {
-            margin-bottom: 40px;
-        }
-        h2 {
-            color: #1DB954;
-            border-bottom: 2px solid #1DB954;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background-color: #181818;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            color: #ffffff;
-            background-color: #1DB954;
-            text-decoration: none;
-            border-radius: 8px;
-            text-align: center;
-        }
-        a:hover {
-            background-color: #1ed760;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Stats</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Spotify Statistics</h1>
+    <h1>Spotify Stats</h1>
+    <h2>Total Tracks Played: {{ total_tracks }}</h2>
+    <h2>Total Minutes Played: {{ total_minutes }}</h2>
 
-        <div class="stat-section">
-            <h2>Total Tracks Played</h2>
-            <p>{{ total_tracks }}</p>
-        </div>
+    <h3>Top 10 Artists</h3>
+    <ul>
+        {% for artist, count in top_artists %}
+        <li>{{ artist }} - {{ count }} tracks</li>
+        {% endfor %}
+    </ul>
 
-        <div class="stat-section">
-            <h2>Total Minutes Listened</h2>
-            <p>{{ total_minutes | round(2) }}</p>
-        </div>
+    <h3>Top 10 Genres</h3>
+    <ul>
+        {% for genre, count in top_genres %}
+        <li>{{ genre }} - {{ count }} times</li>
+        {% endfor %}
+    </ul>
 
-        <div class="stat-section">
-            <h2>Top 10 Artists</h2>
-            <ul>
-                {% for artist, count in top_artists %}
-                <li>{{ artist }}: {{ count }} tracks</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="stat-section">
-            <h2>Top 10 Genres</h2>
-            <ul>
-                {% for genre, count in top_genres %}
-                <li>{{ genre }}: {{ count }} tracks</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="stat-section">
-            <h2>Recently Played Tracks</h2>
-            <div>
-                {% for track in track_details %}
-                <div class="track">
-                    <img src="{{ track.image_url }}" alt="Album cover" width="100">
-                    <div class="track-details">
-                        <p><strong>Track:</strong> {{ track.name }}</p>
-                        <p><strong>Artist:</strong> {{ track.artist }}</p>
-                        <p><strong>Album:</strong> {{ track.album }}</p>
-                        <p><strong>Played At:</strong> {{ track.played_at }}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <a href="{{ url_for('index') }}">Back to Home</a>
-    </div>
+    <h3>Recently Played Tracks</h3>
+    <ul>
+        {% for track in track_details %}
+        <li>
+            <img src="{{ track.image_url }}" alt="Album cover" style="width:50px;height:50px;">
+            {{ track.name }} by {{ track.artist }} from the album {{ track.album }}
+            (Played at: {{ track.played_at }})
+        </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>

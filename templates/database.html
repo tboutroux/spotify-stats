@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Overview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        h2 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Overview</h1>
+
+    <h2>Artistes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Popularity</th>
+                <th>Photo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for artiste in artistes %}
+            <tr>
+                <td>{{ artiste.id }}</td>
+                <td>{{ artiste.name }}</td>
+                <td>{{ artiste.popularity }}</td>
+                <td><img src="{{ artiste.photo }}" alt="Photo" style="width: 100px;"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Albums</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Release Date</th>
+                <th>Total Tracks</th>
+                <th>Popularity</th>
+                <th>Photo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for album in albums %}
+            <tr>
+                <td>{{ album.id }}</td>
+                <td>{{ album.name }}</td>
+                <td>{{ album.release_date }}</td>
+                <td>{{ album.total_tracks }}</td>
+                <td>{{ album.popularity }}</td>
+                <td><img src="{{ album.photo }}" alt="Photo" style="width: 100px;"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Pistes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Duration (ms)</th>
+                <th>Popularity</th>
+                <th>Release Date</th>
+                <th>Photo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for track in tracks %}
+            <tr>
+                <td>{{ track.id }}</td>
+                <td>{{ track.name }}</td>
+                <td>{{ track.duration_ms }}</td>
+                <td>{{ track.popularity }}</td>
+                <td>{{ track.release_date }}</td>
+                <td><img src="{{ track.photo }}" alt="Photo" style="width: 100px;"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Genres</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for genre in genres %}
+            <tr>
+                <td>{{ genre.id }}</td>
+                <td>{{ genre.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Relations Artiste-Album</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Artiste ID</th>
+                <th>Album ID</th>
+            </
