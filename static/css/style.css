@@ -1,10 +1,139 @@
+@import url(https://fonts.googleapis.com/css?family=Poppins:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic);
+
+/* Couleurs Spotify */
+:root {
+    --spotify-bg: #121212;
+    --spotify-green: #1DB954;
+    --spotify-light: #FFFFFF;
+    --spotify-grey: #B3B3B3;
+    --dark-bg: #121212;
+    --light-text: #ffffff;
+    --muted-text: #b3b3b3;
+    --card-bg: #282828;
+}
+
+/* Style général */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #121212;
-    color: #ffffff;
+    background-color: var(--spotify-bg);
+    color: var(--spotify-light);
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
 }
+
+h1 {
+    color: var(--spotify-green);
+    font-size: 3em;
+}
+
+.home-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 50px 0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.home-stats .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    border-radius: 10px;
+    background-color: var(--dark-bg);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.home-stats .stat:hover {
+    transform: translateY(-10px);
+    background-color: var(--card-bg);
+}
+
+.home-stats .stat h3 {
+    color: var(--spotify-green);
+    font-size: 2.5em;
+    margin: 0;
+}
+
+.home-stats .stat p {
+    color: var(--muted-text);
+    font-size: 1.2em;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .home-stats {
+        flex-direction: column;
+    }
+
+    .home-stats .stat {
+        margin-bottom: 20px;
+    }
+
+    .home-stats .stat h3 {
+        font-size: 2em;
+    }
+
+    .home-stats .stat p {
+        font-size: 1em;
+    }
+}
+
+/* Container principal */
+.artistes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+    gap: 20px;
+}
+
+/* Chaque artiste */
+.artiste {
+    background-color: #282828;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    padding: 15px;
+    width: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Animation au hover */
+.artiste:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Image de l'artiste */
+.artiste img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 2px solid var(--spotify-green);
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+/* Nom de l'artiste */
+.artiste h2 {
+    font-size: 1.2em;
+    color: var(--spotify-light);
+    margin: 0;
+    padding: 10px 0;
+}
+
+/* Effet de couleur sur le texte */
+.artiste h2:hover {
+    color: var(--spotify-green);
+}
+
+
 .container {
     width: 80%;
     margin: 0 auto;
@@ -49,16 +178,267 @@ li {
     margin-bottom: 10px;
     border-radius: 8px;
 }
-a {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
-    color: #ffffff;
-    background-color: #1DB954;
-    text-decoration: none;
-    border-radius: 8px;
-    text-align: center;
+
+.artiste-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    justify-content: space-between;
+    margin: 3vh auto 3vh;
+    border: solid 2px var(--spotify-green);
+    border-radius: 10px;
+    background-color: #282828;
 }
-a:hover {
-    background-color: #1ed760;
+
+.artiste-info .left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    width: 50%;
+    margin: 20px;
+}
+
+.artiste-info .left img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+
+.artiste-info h1 {
+    font-size: 3em;
+    color: var(--spotify-light);
+}
+
+.artiste-info .right {
+    display: flex;
+    gap: 5vw;
+    width: 50%;
+    margin: 20px;
+}
+
+/* Conteneur de la popularité */
+.popularity-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Barre de popularité circulaire */
+.artiste-popularity-span {
+    --size: 150px;
+    --thickness: 10px;
+    width: var(--size);
+    height: var(--size);
+    background: conic-gradient(var(--spotify-green) calc(var(--popularity) * 1%), var(--spotify-grey) calc(var(--popularity) * 1%));
+    border-radius: 50%;
+    position: relative;
+}
+
+/* Cercle intérieur pour créer l'effet circulaire */
+.artiste-popularity-span::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--size) - 2 * var(--thickness));
+    height: calc(var(--size) - 2 * var(--thickness));
+    background-color: #282828;
+    border-radius: 50%;
+}
+
+/* Label de la popularité */
+.popularity-label {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: var(--spotify-light);
+    font-weight: bold;
+}
+
+/* Liste des chansons */
+.tracks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Chaque chanson */
+.track {
+    display: flex;
+    align-items: center;
+    background-color: #282828;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.track:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Image de la chanson */
+.track-photo {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-right: 20px;
+}
+
+/* Détails de la chanson */
+.track-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.track-details h3 {
+    font-size: 1.5em;
+    margin: 0 0 10px 0;
+    color: var(--spotify-light);
+}
+
+.track-details p {
+    font-size: 1em;
+    margin: 5px 0;
+    color: var(--spotify-grey);
+}
+
+/* Formatage du texte */
+.track-details p span {
+    color: var(--spotify-light);
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Style pour la barre de recherche */
+.search-container {
+    width: 100%;
+
+}
+
+.search-container form {
+    display: flex;
+    justify-content: center;
+    align-items: space-between;
+    gap: 1vw;
+    width: 100%;
+}
+
+.search-container input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid var(--spotify-green);
+    background-color: var(--spotify-bg);
+    border-radius: 4px;
+    width: 90%;
+}
+
+.search-container input[type="text"]:focus {
+    color: var(--spotify-light);
+}
+
+.search-container button {
+    padding: 10px 15px;
+    background-color: var(--spotify-green);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-container button:hover {
+    background-color: #1aa34a;
+}
+
+.stats-section {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-bottom: 50px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    margin: 15px;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.card:hover {
+    background-color: var(--hover-bg);
+}
+
+.card h3 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.card p {
+    color: var(--muted-text);
+    font-size: 1.2em;
+}
+
+.recent-tracks ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 40px;
+}
+
+.recent-tracks li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--hover-bg);
+    border-radius: 10px;
+}
+
+.recent-tracks img {
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+    border-radius: 5px;
+}
+
+.recent-tracks div {
+    flex: 1;
+}
+
+.recent-tracks h4 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.recent-tracks p {
+    margin: 5px 0;
+    color: var(--muted-text);
+}
+
+@media (max-width: 768px) {
+    .stats-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        max-width: 100%;
+    }
 }
