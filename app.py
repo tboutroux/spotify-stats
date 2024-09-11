@@ -19,9 +19,153 @@ client_secret = config['spotify']['client_secret']
 redirect_uri = config['spotify']['redirect_uri']
 scope = 'user-read-recently-played user-top-read user-library-read'
 
-@app.route('/')
+def process_stats(access_token):
+    tracks, error = get_all_recently_played_tracks(access_token)
+    if error:
+        return error
+
+    # Récupérer les artistes uniques
+    artist_ids = list(set(item['track']['artists'][0]['id'] for item in tracks))
+    artists, error = get_artist_genres(access_token, artist_ids)
+    if error:
+        return error
+
+    # Insérer les artistes dans la base de données
+    for artist in artists:
+        artist_data = {
+            'id': artist['id'],
+            'name': artist['name'],
+            'popularity': artist['popularity'],
+            'photo': artist['images'][0]['url'] if artist['images'] else ''
+        }
+        if not line_exists('artiste', {'id': artist['id']}):
+            create_line('artiste', artist_data)
+
+    # Insérer les genres dans la base de données
+    for artist in artists:
+        for genre in artist['genres']:
+            if not line_exists('genre', {'name': genre}):
+                genre_data = {'name': genre}
+                create_line('genre', genre_data)
+
+            genre_id = get_genre_id(genre)
+            artiste_genre_data = {
+                'artiste_id': artist['id'],
+                'genre_id': genre_id
+            }
+            if not line_exists('artiste_genre', artiste_genre_data):
+                create_line('artiste_genre', artiste_genre_data)
+
+    # Insérer les albums et tracks dans la base de données
+    for track in tracks:
+        album_id = track['track']['album']['id']
+        album_details = get_album_details(access_token, album_id)
+        if album_details:
+            album_data = {
+                'id': album_details['id'],
+                'name': album_details['name'],
+                'release_date': album_details['release_date'],
+                'total_tracks': album_details['total_tracks'],
+                'popularity': album_details.get('popularity', 0),
+                'photo': album_details['images'][0]['url'] if album_details['images'] else ''
+            }
+            if not line_exists('album', {'id': album_data['id']}):
+                create_line('album', album_data)
+
+            track_data = {
+                'id': track['track']['id'],
+                'name': track['track']['name'],
+                'duration_ms': track['track']['duration_ms'],
+                'popularity': track['track']['popularity'],
+                'release_date': album_details['release_date'],
+                'photo': album_details['images'][0]['url'] if album_details['images'] else ''
+            }
+            if not line_exists('track', {'id': track_data['id']}):
+                create_line('track', track_data)
+
+            # Insérer les relations artiste-track et album-track
+            for artist in track['track']['artists']:
+                artiste_track_data = {
+                    'artiste_id': artist['id'],
+                    'track_id': track['track']['id']
+                }
+                if not line_exists('artiste_track', artiste_track_data):
+                    create_line('artiste_track', artiste_track_data)
+
+            album_track_data = {
+                'album_id': album_id,
+                'track_id': track['track']['id']
+            }
+            if not line_exists('album_track', album_track_data):
+                create_line('album_track', album_track_data)
+
+            # Insérer les relations artiste-album
+            for artist in track['track']['artists']:
+                artiste_album_data = {
+                    'artiste_id': artist['id'],
+                    'album_id': album_id
+                }
+                if not line_exists('artiste_album', artiste_album_data):
+                    create_line('artiste_album', artiste_album_data)
+
+    return "Stats processing completed"
+
+@app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+
+    if session.get('est_connecte'):
+
+        process_stats(access_token=session['access_token'])
+
+
+        # Connexion à la base de données
+        cnx = get_db_connection()
+
+        if cnx is None:
+            return "Erreur de connexion à la base de données."
+
+        # Récupérer la recherche (si présente)
+        search_query = request.args.get('search', '').strip()
+
+        # On compte le nombre d'artistes
+        nb_artistes = len(read_lines('artiste'))
+        
+        # On compte le nombre d'albums
+        nb_albums = len(read_lines('album'))
+
+        # On compte le nombre de pistes
+        nb_pistes = len(read_lines('track'))
+
+        # On compte le nombre total de minutes écoutées
+        total_duration = sum(track['duration_ms'] for track in read_lines('track')) / 60000 / 60
+        total_duration = round(total_duration, 1)
+
+        if search_query:
+            # Filtrer les artistes dont le nom correspond à la recherche
+            artistes = read_lines('artiste', {'name': search_query})  # Exemple de pseudo-syntaxe pour filtrer
+        else:
+            # Récupérer tous les artistes si pas de recherche
+            artistes = read_lines('artiste')
+
+        # Lancer le thread pour traiter les statistiques
+
+        return render_template('index.html', artistes=artistes, nb_artistes=nb_artistes, nb_albums=nb_albums, nb_pistes=nb_pistes, total_duration=total_duration, search_query=search_query)
+
+    return redirect(url_for('login'))
+
+@app.route('/artiste/<id>', methods=['GET', 'POST'])
+def artiste(id):
+
+    artiste = read_lines('artiste', {'id': id})
+
+    titres = read_lines('artiste_track', {'artiste_id': id})
+
+    all_tracks = []
+    for titre in titres:
+        track = read_lines('track', {'id': titre['track_id']})
+        all_tracks.append(track[0])
+
+    return render_template('artiste.html', artiste=artiste[0], titres=all_tracks)
 
 @app.route('/login')
 def login():
@@ -53,9 +197,13 @@ def callback():
 
     r = requests.post(token_url, data=token_data, headers=token_headers)
     token_response_data = r.json()
-    session['access_token'] = token_response_data["access_token"]
 
-    return redirect(url_for('stats'))
+    session['access_token'] = token_response_data["access_token"]
+    session['est_connecte'] = True
+
+    # process_stats(access_token=session['access_token'])
+
+    return redirect(url_for('index'))
 
 def get_all_recently_played_tracks(access_token):
     recently_played_url = "https://api.spotify.com/v1/me/player/recently-played"
@@ -157,188 +305,40 @@ def get_album_details(access_token, album_id):
         return None
 
 
+# Je veux une route pour afficher les statistiques
 @app.route('/stats')
 def stats():
     access_token = session.get('access_token')
     if not access_token:
         return redirect(url_for('index'))
+    
+    else:
+        # On récupère les données stockées en base de données
+        cnx = get_db_connection()
 
-    tracks, error = get_all_recently_played_tracks(access_token)
-    if error:
-        return error
+        if cnx is None:
+            return "Erreur de connexion à la base de données."
+        
+        try:
+            cursor = cnx.cursor(dictionary=True)
 
-    # Récupérer les artistes uniques
-    artist_ids = list(set(item['track']['artists'][0]['id'] for item in tracks))
-    artists, error = get_artist_genres(access_token, artist_ids)
-    if error:
-        return error
+            # Récupération des données des artistes
+            artistes = read_lines('artiste')
 
-    # Insérer les artistes dans la base de données
-    for artist in artists:
-        artist_data = {
-            'id': artist['id'],
-            'name': artist['name'],
-            'popularity': artist['popularity'],
-            'photo': artist['images'][0]['url'] if artist['images'] else ''
-        }
-        if not line_exists('artiste', {'id': artist['id']}):
-            create_line('artiste', artist_data)
+            # Récupération des données des albums
+            albums = read_lines('album')
 
-    # Insérer les genres dans la base de données
-    for artist in artists:
-        for genre in artist['genres']:
-            if not line_exists('genre', {'name': genre}):
-                genre_data = {'name': genre}
-                create_line('genre', genre_data)
-            
-            genre_id = get_genre_id(genre)  # Fonction pour récupérer l'id du genre
-            artiste_genre_data = {
-                'artiste_id': artist['id'],
-                'genre_id': genre_id
-            }
-            if not line_exists('artiste_genre', artiste_genre_data):
-                create_line('artiste_genre', artiste_genre_data)
+            # Récupération des données des pistes
+            cursor.execute("SELECT album_id, id, name, duration_ms, popularity, release_date, photo FROM album_track JOIN track ON album_track.track_id = track.id")
+            tracks = cursor.fetchall()
 
-    # Insérer les albums et tracks dans la base de données
-    for track in tracks:
-        album_id = track['track']['album']['id']
-        album_details = get_album_details(access_token, album_id)
-        if album_details:
-            album_data = {
-                'id': album_details['id'],
-                'name': album_details['name'],
-                'release_date': album_details['release_date'],
-                'total_tracks': album_details['total_tracks'],
-                'popularity': album_details.get('popularity', 0),
-                'photo': album_details['images'][0]['url'] if album_details['images'] else ''
-            }
-            if not line_exists('album', {'id': album_data['id']}):
-                create_line('album', album_data)
+            # Récupération des données des genres
+            genres = read_lines('genre')
 
-            track_data = {
-                'id': track['track']['id'],
-                'name': track['track']['name'],
-                'duration_ms': track['track']['duration_ms'],
-                'popularity': track['track']['popularity'],
-                'release_date': album_details['release_date'],
-                'photo': album_details['images'][0]['url'] if album_details['images'] else ''
-            }
-            if not line_exists('track', {'id': track_data['id']}):
-                create_line('track', track_data)
+        except Exception as err:
+            return f"Erreur de la base de données : {err}"
 
-            # Insérer les relations artiste-track et album-track
-            for artist in track['track']['artists']:
-                artiste_track_data = {
-                    'artiste_id': artist['id'],
-                    'track_id': track['track']['id']
-                }
-                if not line_exists('artiste_track', artiste_track_data):
-                    create_line('artiste_track', artiste_track_data)
-
-            album_track_data = {
-                'album_id': album_id,
-                'track_id': track['track']['id']
-            }
-            if not line_exists('album_track', album_track_data):
-                create_line('album_track', album_track_data)
-
-            # Insérer les relations artiste-album
-            for artist in track['track']['artists']:
-                artiste_album_data = {
-                    'artiste_id': artist['id'],
-                    'album_id': album_id
-                }
-                if not line_exists('artiste_album', artiste_album_data):
-                    create_line('artiste_album', artiste_album_data)
-
-    # Statistiques
-    total_tracks = len(tracks)
-    total_minutes = sum(item['track']['duration_ms'] for item in tracks) / 60000  # Convertir ms en minutes
-    artist_counter = Counter([item['track']['artists'][0]['name'] for item in tracks])
-    top_artists = artist_counter.most_common(10)
-    genre_counter = Counter()
-    for artist in artists:
-        for genre in artist['genres']:
-            genre_counter[genre] += 1
-    top_genres = genre_counter.most_common(10)
-
-    track_details = [{
-        'name': item['track']['name'],
-        'artist': item['track']['artists'][0]['name'],
-        'album': item['track']['album']['name'],
-        'played_at': item['played_at'],
-        'image_url': item['track']['album']['images'][0]['url']
-    } for item in tracks]
-
-    return render_template('stats.html', 
-                           total_tracks=total_tracks, 
-                           total_minutes=total_minutes,
-                           top_artists=top_artists,
-                           top_genres=top_genres,
-                           track_details=track_details)
-
-@app.route('/database')
-def database():
-    access_token = session.get('access_token')
-    if not access_token:
-        return redirect(url_for('index'))
-
-    # Connexion à la base de données
-    cnx = get_db_connection()
-    if cnx is None:
-        return "Erreur de connexion à la base de données."
-
-    try:
-        cursor = cnx.cursor(dictionary=True)
-
-        # Récupération des données des artistes
-        cursor.execute("SELECT * FROM artiste")
-        artistes = cursor.fetchall()
-
-        # Récupération des données des albums
-        cursor.execute("SELECT * FROM album")
-        albums = cursor.fetchall()
-
-        # Récupération des données des pistes
-        cursor.execute("SELECT * FROM track")
-        tracks = cursor.fetchall()
-
-        # Récupération des données des genres
-        cursor.execute("SELECT * FROM genre")
-        genres = cursor.fetchall()
-
-        # Récupération des relations artistes-albums
-        cursor.execute("SELECT * FROM artiste_album")
-        artiste_album_relations = cursor.fetchall()
-
-        # Récupération des relations artistes-pistes
-        cursor.execute("SELECT * FROM artiste_track")
-        artiste_track_relations = cursor.fetchall()
-
-        # Récupération des relations albums-pistes
-        cursor.execute("SELECT * FROM album_track")
-        album_track_relations = cursor.fetchall()
-
-        # Récupération des relations artistes-genres
-        cursor.execute("SELECT * FROM artiste_genre")
-        artiste_genre_relations = cursor.fetchall()
-
-    except mysql.connector.Error as err:
-        return f"Erreur de la base de données : {err}"
-    finally:
-        cursor.close()
-        cnx.close()
-
-    return render_template('database.html',
-                           artistes=artistes,
-                           albums=albums,
-                           tracks=tracks,
-                           genres=genres,
-                           artiste_album_relations=artiste_album_relations,
-                           artiste_track_relations=artiste_track_relations,
-                           album_track_relations=album_track_relations,
-                           artiste_genre_relations=artiste_genre_relations)
-
+    return render_template('stats.html', artistes=artistes, albums=albums, tracks=tracks, genres=genres)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

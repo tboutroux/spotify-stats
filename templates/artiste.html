@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ artiste.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="artiste-info">
+            <div class="left">
+                <img src="{{ artiste.photo }}" alt="{{ artiste.name }}" class="artiste-photo">
+            </div>
+            <div class="right">
+                <h1>{{ artiste.name }}</h1>
+                
+                <div class="popularity-container">
+                    <span class="artiste-popularity-span" style="--popularity: {{ artiste.popularity }}"></span>
+                    <div class="popularity-label">
+                        Popularité: {{ artiste.popularity }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="tracks-list">
+            {% for track in titres %}
+                <div class="track">
+                    <img src="{{ track.photo }}" alt="{{ track.name }}" class="track-photo">
+                    <div class="track-details">
+                        <h3>{{ track.name }}</h3>
+                        <p>Duration: {{ track.duration_ms }}</p>
+                        <p>Release Date: {{ track.release_date }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+
+</body>
+</html>

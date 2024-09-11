@@ -62,6 +62,14 @@ CREATE TABLE IF NOT EXISTS artiste_genre (
     FOREIGN KEY (genre_id) REFERENCES genre(id)
 );
 
+CREATE TABLE IF NOT EXISTS recently_played (
+    artiste_id varchar(25) NOT NULL,
+    track_id varchar(25) NOT NULL,
+    album_id varchar(25) NOT NULL,
+    played_at datetime NOT NULL,
+    PRIMARY KEY (artiste_id, track_id)
+);
+
 -- TEST
 
 INSERT INTO artiste (id, name, popularity, photo) VALUES ('1', 'Ariana Grande', 100, 'https://i.scdn.co/image/ab67616d0000b273f3f3f3f3f3f3f3f3f3f3f3f3');

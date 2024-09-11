@@ -3,36 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
     <title>Spotify Stats</title>
 </head>
 <body>
-    <h1>Spotify Stats</h1>
-    <h2>Total Tracks Played: {{ total_tracks }}</h2>
-    <h2>Total Minutes Played: {{ total_minutes }}</h2>
+    <div class="container">
 
-    <h3>Top 10 Artists</h3>
-    <ul>
-        {% for artist, count in top_artists %}
-        <li>{{ artist }} - {{ count }} tracks</li>
-        {% endfor %}
-    </ul>
+        <h1>Spotify Stats</h1>
+    
+        <div class="stats-section">
+            <div class="card">
+                <h3>Artistes</h3>
+                <p>{{ artistes|length }}</p>
+            </div>
+            <div class="card">
+                <h3>Albums</h3>
+                <p>{{ albums|length }}</p>
+            </div>
+            <div class="card">
+                <h3>Pistes</h3>
+                <p>{{ tracks|length }}</p>
+            </div>
+            <div class="card">
+                <h3>Genres</h3>
+                <p>{{ genres|length }}</p>
+            </div>
+        </div>
+    
+        <h2>Tous les titres</h2>
+        
 
-    <h3>Top 10 Genres</h3>
-    <ul>
-        {% for genre, count in top_genres %}
-        <li>{{ genre }} - {{ count }} times</li>
-        {% endfor %}
-    </ul>
-
-    <h3>Recently Played Tracks</h3>
-    <ul>
-        {% for track in track_details %}
-        <li>
-            <img src="{{ track.image_url }}" alt="Album cover" style="width:50px;height:50px;">
-            {{ track.name }} by {{ track.artist }} from the album {{ track.album }}
-            (Played at: {{ track.played_at }})
-        </li>
-        {% endfor %}
-    </ul>
+        <div class="recent-tracks">
+            <ul>
+                {% for track in tracks %}
+                <li>
+                    <img src="{{ track['photo'] }}" alt="Cover Album">
+                    <div>
+                        <h4>{{ track['name'] }}</h4>
+                        <p>Durée : {{ track['duration_ms'] / 60000|round(2) }} minutes</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

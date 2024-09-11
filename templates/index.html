@@ -6,7 +6,51 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
 </head>
 <body>
-    <h1>Bienvenue sur l'application de stats Spotify</h1>
-    <a href="{{ url_for('login') }}">Login with Spotify</a>
+    <div class="container">
+        <h1>SPOTIFY APP</h1>
+
+
+        <div class="search-container">
+            <form action="{{ url_for('index') }}" method="GET">
+                <input type="text" name="search" placeholder="Rechercher un artiste..." value="{{ request.args.get('search', '') }}">
+                <button type="submit">Rechercher</button>
+            </form>
+        </div>
+
+        <a href="{{ url_for('stats') }}">    
+            <div class="home-stats">
+                <div class="stat">
+                    <h3>{{ nb_artistes }}</h3>
+                    <p>Artistes</p>
+                </div>
+                <div class="stat">
+                    <h3>{{ nb_pistes }}</h3>
+                    <p>Pistes</p>
+                </div>
+                <div class="stat">
+                    <h3>{{ nb_albums }}</h3>
+                    <p>Albums</p>
+                </div>
+                <div class="stat">
+                    <h3>{{ total_duration }}</h3>
+                    <p>Heures</p>
+                </div>
+            </div>
+        </a>
+
+        <div class="artistes">
+            {% for artiste in artistes %}
+                <a href="/artiste/{{ artiste.id }}">
+                    <div class="artiste">
+                        <img src="{{ artiste.photo }}" alt="{{ artiste.name }}">
+                        <h2>{{ artiste.name }}</h2>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+        
+
 </body>
 </html>
