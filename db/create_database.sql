@@ -69,7 +69,3 @@ CREATE TABLE IF NOT EXISTS recently_played (
     played_at datetime NOT NULL,
     PRIMARY KEY (artiste_id, track_id)
 );
-
--- TEST
-
-INSERT INTO artiste (id, name, popularity, photo) VALUES ('1', 'Ariana Grande', 100, 'https://i.scdn.co/image/ab67616d0000b273f3f3f3f3f3f3f3f3f3f3f3f3');
